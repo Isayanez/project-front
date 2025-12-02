@@ -1,0 +1,49 @@
+section {
+    display: flex;
+    flex-direction: column;
+    gap: 32px; // Un poco menos de espacio que el login porque hay más campos
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 16px;
+
+    img {
+        width: 100%;
+        max-width: 200px; // Un poco más pequeño para dar espacio al formulario
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--primary);
+    }
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 384px;
+        gap: 8px; // Espacio entre inputs
+    }
+
+    .button-primary {
+        margin-top: 16px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .button-secundary {
+        margin-top: 8px;
+        width: 100%;
+        text-align: center;
+        border: none; // Quitamos borde si prefieres que parezca enlace
+        background: transparent;
+        color: cadetblue; // O el color de tu variable --primary
+        cursor: pointer;
+        
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}

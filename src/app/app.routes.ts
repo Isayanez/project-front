@@ -10,10 +10,15 @@ import { OrdersViewComponent } from './private/orders-view/orders-view.component
 import { DashAdminComponent } from './private/dash-admin/dash-admin.component';
 import { UserViewComponent } from './private/user-view/user-view.component';
 import { UserComponent } from './private/user/user.component';
+import { SignUpComponent } from './public/auth/sign-up/sign-up.component';
 export const routes: Routes = [
   {
     path: 'auth/sign-in',
     component: SignInComponent,
+  },
+  {
+    path: 'auth/sign-up',
+    component: SignUpComponent
   },
   {
     path: '',
