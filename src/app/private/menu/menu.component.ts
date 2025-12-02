@@ -109,6 +109,7 @@ export class MenuComponent {
     name: string,
     name_category: string
   ) {
+    
     this.barraComentarios.open();
 
     (this._order.formOrder.controls['order_details'] as FormArray).push(

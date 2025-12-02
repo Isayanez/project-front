@@ -100,6 +100,9 @@ async placeOrder() {
 
   if (this._order.formOrder.valid && this._wsService.socketStatus) {
     var data = await this._provider.request('POST', 'order/createOrder', this._order.formOrder.value);
+
+    console.log(data);
+    
     
     if (data) {
     

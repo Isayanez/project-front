@@ -33,13 +33,14 @@ export class ProviderService {
     //Detecta el dominio o hostname en entornos del navegador. Si se ejecuta fuera del navegador, asigna 'localhost' por defecto.
     const DOMINIO = typeof window !== 'undefined' ? window.location.hostname : 'localhost'; 
     //Puerto del servidor
-    const ACCESS = '3000';
+    const ACCESS = '8000';
     //Define el servicio web específico. (No lo uso en este caso)
     //const WSERVICE = 'comandas/public';
     //Construye la URL base concatenando el protocolo, dominio y puerto
-    let url = PROTOCOL + '//' + DOMINIO + ':' + ACCESS + '/';
+    let url = PROTOCOL + '//' + DOMINIO + ':' + ACCESS + '/' + 'public/';
     //console.log(url);
     //Retorna una nueva promesa
+
     return new Promise<T>((resolve, reject) =>
       this._http
         .request<any>(method, url + action, {
@@ -60,7 +61,7 @@ export class ProviderService {
   }
   //Se definen los header el simple es estático y el authorization necesita un token
   headers() {
-    return new HttpHeaders().set('simple','bb1557a2774351913c8557251ec2cbb4').set('authorization',this._localstorage.getItem('user') == null ? '':this._localstorage.getItem('user').token);
+    return new HttpHeaders().set('simple','8c4dcef9ae6511f76f72a9ee997d2ff5').set('authorization',this._localstorage.getItem('user') == null ? '':this._localstorage.getItem('user').token);
   }
   //Se convierten los parametros en formato JSON antes de ser incluidos en el solicitud
   params(params: any) {

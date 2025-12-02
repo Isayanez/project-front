@@ -21,7 +21,6 @@ export class PrivateComponent {
   rol: number = 0;
 
   ngOnInit(){
-
     this.user = this._localstorage.getItem('user').name;
     this.rol = this._localstorage.getItem('user').rol;
   }
