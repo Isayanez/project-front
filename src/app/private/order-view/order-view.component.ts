@@ -114,11 +114,15 @@ export class OrderViewComponent {
   }
 
   async placeOrder() {
-    console.log(this._order.formOrder.value);
+
 
     this._order.formOrder.controls['users_idusers'].patchValue(
       this._localStorage.getItem('user').idusers
     );
+
+    if (this.isClient) {
+      this._order.formOrder.controls['client'].patchValue(this._localStorage.getItem('user').name);
+    }
 
     if (this._order.formOrder.valid && this._wsService.socketStatus) {
       var data = await this._provider.request(
@@ -127,7 +131,6 @@ export class OrderViewComponent {
         this._order.formOrder.value
       );
 
-      console.log(data);
 
       if (data) {
         await this._wsService.request('comandas', data);
