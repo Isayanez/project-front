@@ -48,6 +48,7 @@ button{
     gap: 8px;
     justify-content: flex-start;
     height: 24px;
+    text-wrap: nowrap;
     svg{
         flex-shrink: 0;
     }

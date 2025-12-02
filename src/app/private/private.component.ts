@@ -19,10 +19,15 @@ export class PrivateComponent {
   private _router: Router = inject(Router);
   user: string = '';
   rol: number = 0;
+  id: string = '';
 
   ngOnInit(){
-    this.user = this._localstorage.getItem('user').name;
-    this.rol = this._localstorage.getItem('user').rol;
+    const userData = this._localstorage.getItem('user');
+    if(userData) {
+      this.user = userData.name;
+      this.rol = userData.rol;
+      this.id = userData.idusers; // <--- 2. Obtenemos el ID del storage
+    }
   }
   logOut(){
 

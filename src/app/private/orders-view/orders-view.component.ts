@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import {MatTabsModule} from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { ProviderService } from '../../services/provider.service';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -8,68 +8,72 @@ import { OrderDetailComponent } from '../order-detail/order-detail.component';
 import { DialogCompleteComponent } from '../dialog-complete/dialog-complete.component';
 import { DialogCancelComponent } from '../dialog-cancel/dialog-cancel.component';
 import { WebSocketsService } from '../../services/web-sockets.service';
+import { LocalstorageService } from '../../services/localstorage.service';
 
 @Component({
   selector: 'app-orders-view',
   standalone: true,
   imports: [MatTabsModule, MatDialogModule, MatTableModule],
   templateUrl: './orders-view.component.html',
-  styleUrl: './orders-view.component.scss'
+  styleUrl: './orders-view.component.scss',
 })
 export class OrdersViewComponent {
+  private _provider: ProviderService = inject(ProviderService);
+  private dialog: MatDialog = inject(MatDialog);
+  private _wsService: WebSocketsService = inject(WebSocketsService);
+  private _localStorage: LocalstorageService = inject(LocalstorageService);
 
-private _provider: ProviderService = inject(ProviderService);
-private dialog: MatDialog = inject(MatDialog);
-private _wsService: WebSocketsService = inject(WebSocketsService);
+  order: any[] = [];
 
-order: any[] = []; 
+  status = [
+    { name: 'Activas', value: 0 },
+    { name: 'En proceso', value: 1 },
+    { name: 'Ordenes Listas', value: 2 },
+    { name: 'Completadas', value: 3 },
+    { name: 'Canceladas', value: 4 },
+  ];
 
-status = [
-  { name: "Activas", value: 0 },
-  { name: "En proceso", value: 1 },
-  { name: "Ordenes Listas", value: 2 },
-  { name: "Completadas", value: 3 },
-  { name: "Canceladas", value: 4 }
-];
+  displayedColumns = ['client', 'total', 'comments', 'function'];
 
-displayedColumns = ['client', 'total', 'comments', 'function'];
+  async ngOnInit() {
+    const allOrders = await this._provider.request('GET', 'order/viewOrders') as any[];
 
-async ngOnInit() {
+    const user = this._localStorage.getItem('user');
 
-  this.order = await this._provider.request('GET', 'order/viewOrders');
-  
+    if (user && user.rol === 3) {
+      this.order = allOrders.filter((o: any) => o.client === user.name);
+    } else {
+      this.order = allOrders;
+    }
 
-  this.listenSocket();
-}
+    this.listenSocket();
+  }
 
-filterByStatus(status: number) {
-  return this.order.filter((eachOrder: any) => eachOrder.status == status);
-}
+  filterByStatus(status: number) {
+    return this.order.filter((eachOrder: any) => eachOrder.status == status);
+  }
 
-openOrderDetailDialog(idorder: string) {
-  this.dialog.open(OrderDetailComponent, { data: idorder });
-}
+  openOrderDetailDialog(idorder: string) {
+    this.dialog.open(OrderDetailComponent, { data: idorder });
+  }
 
-openConfirmDialog(data: string) {
-  this.dialog.open(DialogCompleteComponent, { data: data });
-  console.log(data);
-}
-
-openCancelDialog(data: any) {
-  this.dialog.open(DialogCancelComponent, { data: data });
-}
-
-listenSocket() {
-  this._wsService.listen('comanda').subscribe((data) => {
+  openConfirmDialog(data: string) {
+    this.dialog.open(DialogCompleteComponent, { data: data });
     console.log(data);
-    
-  
-    this.order = this.order.filter((item) => item.idorder != data.idorder);
-    this.order.unshift(data);
-    
-  
-    this.filterByStatus(data.status);
-  });
-}
+  }
 
+  openCancelDialog(data: any) {
+    this.dialog.open(DialogCancelComponent, { data: data });
+  }
+
+  listenSocket() {
+    this._wsService.listen('comanda').subscribe((data) => {
+      console.log(data);
+
+      this.order = this.order.filter((item) => item.idorder != data.idorder);
+      this.order.unshift(data);
+
+      this.filterByStatus(data.status);
+    });
+  }
 }
