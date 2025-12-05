@@ -1,13 +1,18 @@
 import { Component, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProviderService } from '../../services/provider.service';
-import { PrivateComponent } from '../private.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { WebSocketsService } from '../../services/web-sockets.service';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-user',
@@ -17,104 +22,81 @@ import { WebSocketsService } from '../../services/web-sockets.service';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    RouterLink,
   ],
   templateUrl: './user.component.html',
   styleUrl: './user.component.scss',
 })
 export class UserComponent {
+  private _fb = inject(FormBuilder);
+  private _provider = inject(ProviderService);
+  private _router = inject(Router);
+  private _route = inject(ActivatedRoute);
+  private _snackBar = inject(MatSnackBar);
 
-private _formbuilder: FormBuilder = inject(FormBuilder);
-private _provider: ProviderService = inject(ProviderService);
-private _snackBar: MatSnackBar = inject(MatSnackBar);
-private _wsService: WebSocketsService = inject(WebSocketsService);
-private _router: Router = inject(Router);
-private _activedRouter: ActivatedRoute = inject(ActivatedRoute);
+  isEditMode = false;
+  userId: string | null = null;
+  hidePassword = true;
 
-id: string = '';
+  // Formulario
+  form: FormGroup = this._fb.group({
+    idusers: [''], // Campo oculto para el ID
+    name: ['', Validators.required],
+    phone: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+    rol: ['', Validators.required],
+    password: [''],
+  });
 
-roles = [
-  { name: 'admin', value: 0 },
-  { name: 'cajero', value: 1 },
-  { name: 'cocinero', value: 2 },
-  { name: 'cliente', value: 3 },
-];
+  // Solo roles permitidos para crear (SIN CLIENTE)
+  roles = [
+    { value: 0, viewValue: 'Administrador' },
+    { value: 1, viewValue: 'Cajero' },
+    { value: 2, viewValue: 'Cocinero' },
+  ];
 
-formulario = this._formbuilder.group({
-  idusers: [null],
-  name: [null, [Validators.required]],
-  password: [null, [Validators.required]],
-  phone: [null],
-  rol: [null, Validators.required],
-});
-
-async ngOnInit() {
-
-  if (this._router.url.includes('edit')) {
-    this._activedRouter.params.subscribe(async (params: Params) => {
-      this.id = params['id'];
-      console.log(this.id);    
-      var user: any = (await this._provider.request('GET', 'user/viewUser', {idusers: this.id}) as any)[0];
-      console.log(user);    
-      this.formulario.patchValue(user);
+  async ngOnInit() {
+    // Verificar si estamos editando (si hay ID en la URL)
+    this._route.paramMap.subscribe(async (params) => {
+      this.userId = params.get('id');
+      if (this.userId) {
+        this.isEditMode = true;
+        await this.loadUser(this.userId);
+      } else {
+        this.form.get('password')?.addValidators(Validators.required);
+        this.form.get('password')?.updateValueAndValidity();
+      }
     });
   }
-}
 
-async save() {
-  console.log(this.formulario.value);
-
-
-  if (this._router.url.includes('edit')) {
-    if (this.formulario.valid && this._wsService.socketStatus) {
-      var data = await this._provider.request('PUT', 'user/updateUser', this.formulario.value);
-      
-      if (data) {
-        await this._wsService.request('usuarios', data);
-        this._snackBar.open('Usuario Actualizado', '', {duration: 3000, verticalPosition: 'top'});
-        this._router.navigate(['private/user-view']);
-        this.formulario.reset();
-      } else {
-        this._snackBar.open('No es posible actualizar el usuario', '', {duration: 3000, verticalPosition: 'top'});
-      }
-    } else {
-      this._snackBar.open('No es posible actualizar el usuario', '', {duration: 3000, verticalPosition: 'top'});
-      document.querySelectorAll('.ng-invalid, .mat-mdc-radio-group.unselect').forEach((element: Element) => element.classList.add('invalid'));
-    }
-  } else {
-    if (this.formulario.valid && this._wsService.socketStatus) {
-      var data = await this._provider.request('POST', 'auth/signup', this.formulario.value);
-      
-      if (data) {
-        await this._wsService.request('usuarios', data);
-        this._snackBar.open('Usuario Creado', '', {duration: 3000, verticalPosition: 'top'});
-        this._router.navigate(['private/user-view']);
-        this.formulario.reset();
-      } else {
-        this._snackBar.open('No es posible crear el usuario', '', {duration: 3000, verticalPosition: 'top'});
-      }
-    } else {
-      this._snackBar.open('No es posible crear el usuario', '', {duration: 3000, verticalPosition: 'top'});
-      document.querySelectorAll('.ng-invalid, .mat-mdc-radio-group.unselect').forEach((element: Element) => element.classList.add('invalid'));
+  async loadUser(id: string) {
+    const res = await this._provider.request('GET', 'user/getUser', { id }) as any;
+    if (res) {
+      this.form.patchValue({
+        idusers: res.idusers,
+        name: res.name,
+        phone: res.phone,
+        rol: res.rol,
+      });
     }
   }
-}
 
-async deleteUser() {
-  if (this._wsService.socketStatus) {
-    var data = await this._provider.request('DELETE', 'user/deleteUser', {idusers: this.id});
-    
-    if (data) {
-      await this._wsService.request('usuarios', data);
-      this._snackBar.open('Usuario Eliminado', '', {duration: 3000, verticalPosition: 'top'});
-      this._router.navigate(['private/user-view']);
-      this.formulario.reset();
+  async save() {
+    if (this.form.invalid) return;
+
+    const endpoint = this.isEditMode ? 'user/updateUser' : 'user/createUser';
+    const method = this.isEditMode ? 'PUT' : 'POST';
+
+    const res = await this._provider.request(method, endpoint, this.form.value) as any;
+
+    if (res && !res.error) {
+      this._snackBar.open('Datos guardados correctamente', 'Cerrar', {
+        duration: 3000,
+      });
+      this._router.navigate(['/private/user-view']);
     } else {
-      this._snackBar.open('No es posible eliminar el usuario', '', {duration: 3000, verticalPosition: 'top'});
+      this._snackBar.open('Error al guardar', 'Cerrar', { duration: 3000 });
     }
-  } else {
-    this._snackBar.open('No es posible eliminar el usuario', '', {duration: 3000, verticalPosition: 'top'});
-    document.querySelectorAll('.ng-invalid, .mat-mdc-radio-group.unselect').forEach((element: Element) => element.classList.add('invalid'));
   }
-}
-
 }

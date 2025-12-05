@@ -31,7 +31,7 @@ import { Router, RouterLink } from '@angular/router';
     FormsModule,
     ReactiveFormsModule,
     MatSidenavModule,
-    KeyValuePipe,
+    // KeyValuePipe,
     MatSelectModule,
     MatCheckboxModule,
     NgStyle,

@@ -10,7 +10,7 @@ import { LocalstorageService } from '../services/localstorage.service';
 @Component({
   selector: 'app-private',
   standalone: true,
-  imports: [MatSidenavModule, MatIconModule, MenuComponent, MatFormFieldModule,RouterOutlet,RouterLink],
+  imports: [MatSidenavModule, MatIconModule, MatFormFieldModule,RouterOutlet,RouterLink],
   templateUrl: './private.component.html',
   styleUrl: './private.component.scss'
 })

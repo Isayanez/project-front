@@ -20,6 +20,7 @@ import { LocalstorageService } from '../../services/localstorage.service';
 export class OrdersViewComponent {
   private _provider: ProviderService = inject(ProviderService);
   private dialog: MatDialog = inject(MatDialog);
+  
   private _wsService: WebSocketsService = inject(WebSocketsService);
   private _localStorage: LocalstorageService = inject(LocalstorageService);
 
