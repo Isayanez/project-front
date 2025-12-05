@@ -1,16 +1,64 @@
-<mat-card appearance="outlined">
-    <mat-card-header>
-      <mat-card-title>Ventas totales</mat-card-title>
-      <mat-card-subtitle>{{total.total}}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-header>
-        <mat-card-title>Promedio tiempo de realizacion</mat-card-title>
-        <mat-card-subtitle>{{avg.minutos}} minutos</mat-card-subtitle>
-      </mat-card-header>
-  </mat-card>  
-<h2>Ventas del mes</h2>
-<canvas baseChart [data]="dataSales" [type]="'bar'" #chartSales></canvas>
-<h2>Mejores clientes</h2>
-<canvas baseChart [data]="dataClient" [type]="'bar'"></canvas>
-<h2>Productos más vendidos</h2>
-<canvas baseChart [data]="dataProduct" [type]="'bar'"></canvas>
+<div class="dashboard-container">
+  <h1 class="page-title">Panel de Administración</h1>
+
+  <div class="kpi-grid">
+      <mat-card class="kpi-card sales-card">
+          <div class="kpi-content">
+              <div class="kpi-icon">
+                  <mat-icon>attach_money</mat-icon>
+              </div>
+              <div class="kpi-data">
+                  <p class="kpi-label">Ventas Totales</p>
+                  <h2 class="kpi-value">{{total.total | currency}}</h2>
+              </div>
+          </div>
+      </mat-card>
+
+      <mat-card class="kpi-card time-card">
+          <div class="kpi-content">
+              <div class="kpi-icon">
+                  <mat-icon>timer</mat-icon>
+              </div>
+              <div class="kpi-data">
+                  <p class="kpi-label">Tiempo Promedio</p>
+                  <h2 class="kpi-value">{{avg.minutos | number:'1.0-0'}} min</h2>
+              </div>
+          </div>
+      </mat-card>
+  </div>
+
+  <div class="charts-grid">
+      
+      <mat-card class="chart-card full-width">
+          <mat-card-header>
+              <mat-icon mat-card-avatar>bar_chart</mat-icon>
+              <mat-card-title>Ventas del Mes</mat-card-title>
+              <mat-card-subtitle>Comportamiento de ventas por periodo</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+              <canvas baseChart [data]="dataSales" [type]="'bar'" #chartSales></canvas>
+          </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+          <mat-card-header>
+              <mat-icon mat-card-avatar>emoji_events</mat-icon>
+              <mat-card-title>Top Clientes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+              <canvas baseChart [data]="dataClient" [type]="'bar'"></canvas>
+          </mat-card-content>
+      </mat-card>
+
+      <mat-card class="chart-card">
+          <mat-card-header>
+              <mat-icon mat-card-avatar>fastfood</mat-icon>
+              <mat-card-title>Productos Estrella</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+              <canvas baseChart [data]="dataProduct" [type]="'bar'"></canvas>
+          </mat-card-content>
+      </mat-card>
+
+  </div>
+</div>
