@@ -1,7 +1,15 @@
-<button mat-button routerLink="/private/user-view">
-    <mat-icon>arrow_back</mat-icon>
-    Volver
-</button>
+
+@if (userRol !== 3) {
+    <button mat-button routerLink="/private/user-view">
+        <mat-icon>arrow_back</mat-icon>
+        Volver
+    </button>
+} @else {
+    <button mat-button routerLink="/private/menu">
+        <mat-icon>arrow_back</mat-icon>
+        Volver
+    </button>
+}
 
 <div class="form-container">
     <h1>{{ isEditMode ? 'Editar Empleado' : 'Nuevo Empleado' }}</h1>
@@ -21,15 +29,18 @@
             <mat-icon matPrefix>phone</mat-icon>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-            <mat-label>Rol</mat-label>
-            <mat-select formControlName="rol">
-                @for (role of roles; track role) {
-                    <mat-option [value]="role.value">{{role.viewValue}}</mat-option>
-                }
-            </mat-select>
-            <mat-icon matPrefix>badge</mat-icon>
-        </mat-form-field>
+        <!-- El campo rol no es visible si el usuario tienme un role 3 -->
+        @if (userRol !== 3) {
+            <mat-form-field appearance="outline">
+                <mat-label>Rol</mat-label>
+                <mat-select formControlName="rol">
+                    @for (role of roles; track role) {
+                        <mat-option [value]="role.value">{{role.viewValue}}</mat-option>
+                    }
+                </mat-select>
+                <mat-icon matPrefix>badge</mat-icon>
+            </mat-form-field>
+        }
 
         <mat-form-field appearance="outline">
             <mat-label>Contraseña {{ isEditMode ? '(Dejar en blanco para no cambiar)' : '' }}</mat-label>

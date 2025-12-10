@@ -38,8 +38,6 @@ export class SignInComponent {
     if (this.form_signin.valid) {
   
       this.req = await this._provider.request('POST', 'auth/signin', this.form_signin.value);
-      console.log(this.req);
-      
   
       this._localstorage.setItem('user', this.req);
   

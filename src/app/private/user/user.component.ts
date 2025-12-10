@@ -13,11 +13,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { LocalstorageService } from '../../services/localstorage.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-user',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -35,10 +38,13 @@ export class UserComponent {
   private _router = inject(Router);
   private _route = inject(ActivatedRoute);
   private _snackBar = inject(MatSnackBar);
+  private _localstorage: LocalstorageService = inject(LocalstorageService);
 
   isEditMode = false;
   userId: string | null = null;
   hidePassword = true;
+  userRol: number = 0;
+  req: any;
 
   // Formulario
   form: FormGroup = this._fb.group({
@@ -71,8 +77,14 @@ export class UserComponent {
   }
 
   async loadUser(id: string) {
-    const res = await this._provider.request('GET', 'user/getUser', { id }) as any;
+    const res = (await this._provider.request('GET', 'user/getUser', {
+      id,
+    })) as any;
+    console.log(res);
+
     if (res) {
+      this.userRol = res.rol;
+
       this.form.patchValue({
         idusers: res.idusers,
         name: res.name,
@@ -88,13 +100,43 @@ export class UserComponent {
     const endpoint = this.isEditMode ? 'user/updateUser' : 'user/createUser';
     const method = this.isEditMode ? 'PUT' : 'POST';
 
-    const res = await this._provider.request(method, endpoint, this.form.value) as any;
+    const res = (await this._provider.request(
+      method,
+      endpoint,
+      this.form.value
+    )) as any;
 
     if (res && !res.error) {
       this._snackBar.open('Datos guardados correctamente', 'Cerrar', {
         duration: 3000,
       });
-      this._router.navigate(['/private/user-view']);
+
+      // Si el usuario es cliente (Rol 3) o si el usuario se está editando a sí mismo
+      if (this.userRol === 3) {
+        const id = this.userId || this.form.value.idusers;
+
+        // Obtenemos la sesión ACTUAL (que tiene el token vivo)
+        const currentSession = this._localstorage.getItem('user');
+
+        // Obtenemos los datos NUEVOS de la base de datos
+        const updatedUser = (await this._provider.request(
+          'GET',
+          'user/getUser',
+          { id }
+        )) as any;
+        if (updatedUser) {
+          // Si teníamos un token en la sesión vieja, se lo pegamos al objeto nuevo
+          if (currentSession && currentSession.token) {
+            updatedUser.token = currentSession.token;
+          }
+
+          this._localstorage.setItem('user', updatedUser);
+        }
+
+        this._router.navigate(['/private/menu']);
+      } else {
+        this._router.navigate(['/private/user-view']);
+      }
     } else {
       this._snackBar.open('Error al guardar', 'Cerrar', { duration: 3000 });
     }
